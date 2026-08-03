@@ -7,6 +7,16 @@ description: Implement a provided plan, issue, ticket, or well-scoped change, th
 
 Drive the requested change through implementation, independent review, remediation, and clean approval. Keep the primary agent responsible for the code and use a separate subagent as the reviewer.
 
+## Model selection
+
+Accept an optional reviewer model and reasoning effort in the request. Treat an unqualified `model` as the reviewer model. For example:
+
+> Use $implement-review-loop to implement `path/to/ticket.md`; reviewer model `gpt-5.6-sol`, reasoning `high`.
+
+> Use $implement-review-loop to implement this issue; model `gpt-5.6-terra`, reasoning `xhigh`.
+
+When the user does not specify a reviewer model, select the strongest available compatible reviewer model or dedicated advisor/reviewer role, with high reasoning effort when available. Pass a user-requested supported model and reasoning effort unchanged to every reviewer invocation. The primary agent continues implementing with its assigned model; choosing a reviewer model does not change the primary agent.
+
 ## Establish the contract
 
 1. Read the plan, issue, ticket, acceptance criteria, repository instructions, and relevant code.
@@ -36,6 +46,14 @@ After implementation and local verification, spawn one review subagent with thes
 - Keep the reviewer available for every subsequent review pass. Do not replace it with a new reviewer while the loop is active.
 
 Reuse this same reviewer throughout the remediation loop. On every pass, give it the current repository state, complete updated diff, requirements, and latest test results. Require it to review the entire implementation again, including newly introduced regressions and previously unaffected areas, rather than merely confirming that its earlier findings were addressed.
+
+## Reviewer prompt
+
+Use a prompt equivalent to:
+
+> Review the current implementation for the requested task. Inspect the diff and relevant surrounding code and tests. Report only concrete, actionable correctness, regression, requirement, reliability, type-safety, or test-coverage findings, prioritized with severity and file/line evidence. Do not edit files. Return `CHANGES_REQUIRED` if any actionable issue remains; otherwise return `APPROVED` and explicitly state `clean`.
+
+Include the original task path or request, acceptance criteria, repository instructions, and latest test results. Do not leak an expected diagnosis or tell the reviewer which files are suspected.
 
 ## Fix every finding
 
