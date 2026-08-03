@@ -1,0 +1,20 @@
+{
+  "name": "cw-skills",
+  "interface": {
+    "displayName": "CW Skills"
+  },
+  "plugins": [
+    {
+      "name": "cw-skills",
+      "source": {
+        "source": "local",
+        "path": "."
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
