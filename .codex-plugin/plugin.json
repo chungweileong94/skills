@@ -13,6 +13,7 @@
     "longDescription": "Provides reusable workflows for AI coding agents to implement scoped changes and independently review and fix them until approval.",
     "developerName": "Chung Wei Leong",
     "websiteURL": "https://github.com/chungweileong94/skills",
+    "composerIcon": "./assets/logo.png",
     "category": "Productivity",
     "capabilities": [],
     "defaultPrompt": "Use $implement-review-loop to implement this task and review it until clean."
