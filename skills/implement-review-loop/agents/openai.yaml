@@ -1,0 +1,4 @@
+interface:
+  display_name: "Implement Review Loop"
+  short_description: "Implement, review, fix, and repeat to approval"
+  default_prompt: "Use $implement-review-loop to implement this task and iterate through independent review and fixes until approval."
