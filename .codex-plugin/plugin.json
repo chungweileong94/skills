@@ -14,6 +14,7 @@
     "developerName": "Chung Wei Leong",
     "websiteURL": "https://github.com/chungweileong94/skills",
     "composerIcon": "./assets/logo.png",
+    "logo": "./assets/logo.png",
     "category": "Productivity",
     "capabilities": [],
     "defaultPrompt": "Use $implement-review-loop to implement this task and review it until clean."
