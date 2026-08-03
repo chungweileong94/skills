@@ -1,0 +1,18 @@
+{
+  "name": "skills",
+  "version": "0.1.0",
+  "description": "Codex skills for rigorous implementation and independent review loops",
+  "author": {
+    "name": "Chung Wei Leong"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "CW Skills",
+    "shortDescription": "Rigorous implementation and review workflows.",
+    "longDescription": "Provides Codex skills for implementing scoped changes and independently reviewing and fixing them until approval.",
+    "developerName": "Chung Wei Leong",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": "Use $implement-review-loop to implement this task and review it until clean."
+  }
+}
