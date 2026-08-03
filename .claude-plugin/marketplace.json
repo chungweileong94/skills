@@ -1,0 +1,13 @@
+{
+  "name": "cw-skills",
+  "owner": {
+    "name": "Chung Wei Leong"
+  },
+  "plugins": [
+    {
+      "name": "cw-skills",
+      "source": "./",
+      "description": "Reusable workflows for rigorous implementation and independent review loops"
+    }
+  ]
+}
