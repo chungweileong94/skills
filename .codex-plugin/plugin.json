@@ -2,6 +2,7 @@
   "name": "cw-skills",
   "version": "0.1.0",
   "description": "Reusable workflows for rigorous implementation and independent review loops",
+  "homepage": "https://github.com/chungweileong94/skills",
   "author": {
     "name": "Chung Wei Leong"
   },
@@ -11,6 +12,7 @@
     "shortDescription": "Rigorous implementation and review workflows.",
     "longDescription": "Provides reusable workflows for AI coding agents to implement scoped changes and independently review and fix them until approval.",
     "developerName": "Chung Wei Leong",
+    "websiteURL": "https://github.com/chungweileong94/skills",
     "category": "Productivity",
     "capabilities": [],
     "defaultPrompt": "Use $implement-review-loop to implement this task and review it until clean."
