@@ -1,7 +1,7 @@
 {
   "name": "cw-skills",
   "displayName": "CW Skills",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Reusable workflows for rigorous implementation and independent review loops",
   "author": {
     "name": "Chung Wei Leong"

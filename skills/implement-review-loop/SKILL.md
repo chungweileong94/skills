@@ -15,7 +15,7 @@ Accept an optional reviewer model and reasoning effort in the request. Treat an 
 
 > Use $implement-review-loop to implement this issue; model `gpt-5.6-terra`, reasoning `xhigh`.
 
-When the user does not specify a reviewer model, select the strongest available compatible reviewer model or dedicated advisor/reviewer role, with high reasoning effort when available. Pass a user-requested supported model and reasoning effort unchanged to every reviewer invocation. The primary agent continues implementing with its assigned model; choosing a reviewer model does not change the primary agent.
+When the user does not specify a reviewer model or mode, select the strongest available compatible reviewer model or dedicated advisor/reviewer role, with high reasoning effort when available, and do not use fast mode. Use fast mode only when the user explicitly requests it for the reviewer; urgency, brevity, or a request to finish quickly does not count. Pass a user-requested supported model, mode, and reasoning effort unchanged to every reviewer invocation. The primary agent continues implementing with its assigned model; choosing a reviewer model does not change the primary agent.
 
 ## Establish the contract
 
@@ -35,7 +35,7 @@ When the user does not specify a reviewer model, select the strongest available 
 
 After implementation and local verification, spawn one review subagent with these constraints:
 
-- Select the strongest available reviewer model or dedicated advisor/reviewer role. When model and reasoning controls are available, use a model more capable than the implementation model and a high reasoning effort. Do not silently substitute a weaker reviewer.
+- Follow [Model selection](#model-selection) for the reviewer model, mode, and reasoning effort. Do not silently substitute a weaker reviewer.
 - Give the reviewer a clean, task-local brief: the original requirements and acceptance criteria, repository instructions, changed files or diff, and relevant test results.
 - Ask the reviewer to inspect the actual repository state and run focused read-only checks when useful.
 - Do not reveal the primary agent's conclusions, suspected defects, or desired verdict.
