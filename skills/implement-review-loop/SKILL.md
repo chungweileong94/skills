@@ -1,80 +1,70 @@
 ---
 name: implement-review-loop
-description: Implement a provided plan, issue, ticket, or well-scoped change, then repeatedly have the same higher-capability independent subagent review the implementation and fix every valid finding until the reviewer reports no remaining issues. Use when the user asks for implementation with an iterative reviewer/fixer loop, exhaustive subagent review, or completion only after review approval.
+description: Use when the user requests an implementation-review-fix loop with an independent reviewer, or requires review approval before completion. Not for standalone reviews or ordinary implementation requests.
 ---
 
 # Implement Review Loop
 
-Drive the requested change through implementation, independent review, remediation, and clean approval. Keep the primary agent responsible for the code and use a separate subagent as the reviewer.
+Implement the requested scope, obtain independent review, and fix valid findings until approval and required verification pass. The primary agent owns edits; a separate read-only subagent owns review.
 
-## Model selection
+## Reviewer configuration
 
-Accept an optional reviewer model and reasoning effort in the request. Treat an unqualified `model` as the reviewer model. For example:
+Accept optional reviewer model, reasoning effort, and mode settings. An unqualified `model` refers to the reviewer, not the primary agent.
 
-> Use $implement-review-loop to implement `path/to/ticket.md`; reviewer model `gpt-5.6-sol`, reasoning `high`.
+Before editing, check that the host can provide an independent reviewer with the required settings. Attempt safe supported recovery or report a blocker before implementation if it cannot. Honor each supported user-specified option unchanged on every pass; do not silently substitute unsupported explicit options or invent settings.
 
-> Use $implement-review-loop to implement this issue; model `gpt-5.6-terra`, reasoning `xhigh`.
+For unspecified options, choose the strongest available compatible configured reviewer model or dedicated reviewer role, with high reasoning effort where supported. Use the host's configured reviewer/default when a capability ranking is unavailable rather than guessing. A separate reviewer may use the same model as the implementer; it need not be stronger.
 
-When the user does not specify a reviewer model or mode, select the strongest available compatible reviewer model or dedicated advisor/reviewer role, with high reasoning effort when available, and do not use fast mode. Use fast mode only when the user explicitly requests it for the reviewer; urgency, brevity, or a request to finish quickly does not count. Pass a user-requested supported model, mode, and reasoning effort unchanged to every reviewer invocation. The primary agent continues implementing with its assigned model; choosing a reviewer model does not change the primary agent.
+Where the host offers fast mode, use standard mode unless the user explicitly requests fast mode for the reviewer. Urgency alone is not that request. Mode and model selection are separate choices. Choosing a reviewer does not change the primary agent's model.
 
 ## Establish the contract
 
-1. Read the plan, issue, ticket, acceptance criteria, repository instructions, and relevant code.
-2. Resolve ambiguity from repository context when safe. Ask the user only when a missing decision would materially change the requested result.
-3. Define the verification commands and acceptance criteria before editing.
-4. Inspect the working tree and preserve unrelated user changes.
+1. Read the task, acceptance criteria, repository instructions, and relevant code. Resolve ambiguity from context where safe; ask only for missing decisions that materially affect the result.
+2. Define the implementation scope and required verification commands before editing.
+3. Record the starting repository state, including staged, unstaged, and untracked changes. Distinguish task-owned edits from pre-existing work and preserve unrelated user changes.
 
 ## Implement
 
 1. Implement the complete requested scope, including necessary tests and documentation.
-2. Run the most relevant available checks. Fix failures caused by the implementation.
-3. Review the diff for accidental edits, incomplete acceptance criteria, and security or compatibility regressions.
-4. Do not begin the review loop while known implementation failures remain.
+2. Run relevant checks and fix failures caused by the implementation. Do not claim a check passed unless it actually ran successfully.
+3. Inspect the scoped diff for accidental edits and unmet acceptance criteria. Resolve known implementation failures before requesting review; handle unavailable required checks under [Completion and blockers](#completion-and-blockers).
 
-## Spawn the independent reviewer
+## Independent review contract
 
-After implementation and local verification, spawn one review subagent with these constraints:
+After implementation and local verification, spawn a reviewer using the selected configuration. Give it this contract and a neutral task-local brief containing the original requirements, acceptance criteria, repository instructions, complete current scoped diff (including new files), and verification results. Include paths and a baseline that let it inspect the actual repository state. Do not suggest a diagnosis or desired verdict.
 
-- Follow [Model selection](#model-selection) for the reviewer model, mode, and reasoning effort. Do not silently substitute a weaker reviewer.
-- Give the reviewer a clean, task-local brief: the original requirements and acceptance criteria, repository instructions, changed files or diff, and relevant test results.
-- Ask the reviewer to inspect the actual repository state and run focused read-only checks when useful.
-- Do not reveal the primary agent's conclusions, suspected defects, or desired verdict.
-- Give the reviewer read-only ownership. The reviewer must report findings and must not edit files.
-- Require findings to be actionable and evidence-based, with severity, file and line references when applicable, rationale, and a concrete correction.
-- Require coverage of correctness, acceptance criteria, tests, error handling, security, regressions, maintainability, and repository conventions.
-- Require exactly one terminal verdict: `CHANGES_REQUIRED` when any actionable issue remains, or `APPROVED` only when none remain. Suggestions that are genuinely optional must be labeled non-blocking and do not prevent approval.
-- Keep the reviewer available for every subsequent review pass. Do not replace it with a new reviewer while the loop is active.
+Require the reviewer to:
 
-Reuse this same reviewer throughout the remediation loop. On every pass, give it the current repository state, complete updated diff, requirements, and latest test results. Require it to review the entire implementation again, including newly introduced regressions and previously unaffected areas, rather than merely confirming that its earlier findings were addressed.
+- Inspect the actual code and relevant surrounding code and tests. Remain read-only: report findings, do not edit files, and use only checks that do not modify the reviewed work.
+- Review the entire scoped implementation on every pass, including areas untouched by the latest fix and newly introduced regressions. Do not merely confirm earlier fixes. Keep unchanged requirements and the complete diff accessible without repeatedly pasting context the reviewer still has.
+- Cover correctness, acceptance criteria, tests, error handling, security, regressions, maintainability, and repository conventions. Findings need severity, file/line evidence where applicable, rationale, and a concrete correction.
+- Treat only these as blocking code findings: unmet requirements, defects introduced or exposed by the change, or existing defects that prevent the requested behavior from working. Report unrelated existing issues and genuinely optional suggestions separately as non-blocking; do not demand unrelated refactoring.
 
-## Reviewer prompt
+Return exactly one terminal verdict:
 
-Use a prompt equivalent to:
+- `APPROVED`: the full scoped review is complete and no actionable in-scope findings remain; explicitly state `clean`.
+- `CHANGES_REQUIRED`: actionable in-scope findings remain and the reviewer was able to complete the review.
+- `BLOCKED`: essential access, context, evidence, or capability is missing, so review cannot be completed. Identify the blocker and include any findings already established. An incomplete review is never approval.
 
-> Review the current implementation for the requested task. Inspect the diff and relevant surrounding code and tests. Report only concrete, actionable correctness, regression, requirement, reliability, type-safety, or test-coverage findings, prioritized with severity and file/line evidence. Do not edit files. Return `CHANGES_REQUIRED` if any actionable issue remains; otherwise return `APPROVED` and explicitly state `clean`.
-
-Include the original task path or request, acceptance criteria, repository instructions, and latest test results. Do not leak an expected diagnosis or tell the reviewer which files are suspected.
-
-## Fix every finding
+## Remediate and repeat
 
 When the verdict is `CHANGES_REQUIRED`:
 
-1. Validate each finding against the requirements and code.
-2. Fix every valid finding, regardless of severity. Add or update regression tests where appropriate.
-3. If a finding is invalid or conflicts with the user's requirements, do not change behavior merely to appease the reviewer. Record concise evidence explaining why it is not actionable and include that evidence in the next review brief.
-4. Run the relevant verification suite again and fix any resulting failures.
-5. Inspect the complete updated diff, not only the latest patch.
-6. Return the updated implementation to the same reviewer for another complete review pass. Never treat fixes or self-review as approval.
+1. Validate each finding against the requirements and code. Fix every valid in-scope finding regardless of severity, adding regression tests where appropriate.
+2. For invalid or conflicting findings, record concise requirement, code, or test evidence for the next review. Do not change behavior merely to appease the reviewer.
+3. Rerun relevant verification, including checks affected by the fixes, and resolve resulting implementation failures.
+4. Inspect the complete updated scoped diff and provide the current state, verification results, and finding dispositions to the reviewer for another full review. Approval of an earlier state, self-review, or simply applying fixes is not approval of the current state.
 
-Repeat review and remediation with the same reviewer until it returns `APPROVED` and verification passes.
+Reuse the same reviewer while its session remains usable. If unavailable, resume it or create a replacement with the same supported configuration. Hand over the requirements, baseline, current scoped diff, verification results, unresolved findings, and disputed-finding evidence; disclose the replacement. The replacement must complete a full current-state review. Do not replace a functioning reviewer to seek a different verdict.
 
-## Termination rules
+## Completion and blockers
 
-- Finish only when all acceptance criteria are implemented, relevant checks pass, and the latest independent review verdict is `APPROVED` with no actionable findings.
-- Never impose an arbitrary pass limit or downgrade unresolved findings to finish sooner.
-- If the same disputed finding repeats, provide the reviewer with concrete requirement, code, or test evidence. If disagreement still cannot be resolved, ask the user for the missing product decision instead of claiming approval.
-- If a stronger reviewer cannot be spawned, required verification cannot run, or an external dependency blocks progress, exhaust safe in-scope alternatives and report the blocker explicitly. Do not represent a blocked loop as complete.
+Complete only when all acceptance criteria are implemented, required checks pass, and the latest independent review approves the current state. Continue review and remediation without an arbitrary pass limit; never downgrade unresolved findings to finish sooner.
 
-## Report completion
+For a blocked review, unavailable independent reviewer, required check that cannot run, or external dependency failure, attempt safe in-scope recovery first. Respect explicit user budgets and cancellation. If progress remains blocked, report the incomplete work and what is needed to proceed; do not substitute self-review for independent approval.
 
-Summarize the implemented change, verification performed, review passes completed, and significant findings fixed. Mention any non-blocking optional suggestions separately. Do not claim that no issues exist beyond the reviewed scope; state that the final independent pass found no remaining actionable issues.
+Resolve repeated disputed findings with concrete evidence. Ask the user for genuinely missing product decisions; report unresolved technical disagreement as a blocker rather than claiming approval or inventing a product question.
+
+## Report the result
+
+Summarize the implemented scope, checks actually run and their results, review passes and final verdict, significant findings fixed, and any reviewer replacement. Separate optional suggestions and unrelated issues from blockers. On success, state only that the final independent pass found no remaining actionable in-scope issues, not that the software has no bugs.
