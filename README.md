@@ -71,3 +71,14 @@ Use $file-structure when adding the order summary component and its utilities.
 ```
 
 For the Claude Code plugin, use `/cw-skills:file-structure`.
+
+## Bump plugin versions
+
+Update the Codex and Claude Code plugin manifests together with Node.js. No extra dependencies are required:
+
+```bash
+node scripts/bump-version.mjs          # Patch bump, for example 0.1.2 to 0.1.3
+node scripts/bump-version.mjs minor    # Minor bump, for example 0.1.2 to 0.2.0
+node scripts/bump-version.mjs major    # Major bump, for example 0.1.2 to 1.0.0
+node scripts/bump-version.mjs --dry-run
+```
