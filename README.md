@@ -1,6 +1,6 @@
 # CW Skills
 
-Reusable implementation and independent-review workflows for AI coding agents.
+Reusable skills for JS/TS file organization and implementation with independent review.
 
 ## Install
 
@@ -61,3 +61,13 @@ The shared skill keeps explicit implementation, verification, independent review
 The host must support an actual independent review agent with access to the current work. Model selection, reasoning controls, fast mode, and session recovery depend on the host's available tools and configuration. This repository does not supply a reviewer runtime. The reviewer remains read-only, and an unavailable session may be resumed or replaced with a documented handoff, not replaced merely to obtain a different verdict.
 
 Completion requires passing required checks and `APPROVED` for the current state. `CHANGES_REQUIRED` triggers remediation. `BLOCKED` reports an incomplete review; it never counts as approval. There is no arbitrary pass limit, but explicit user budgets and cancellation are respected.
+
+## File structure
+
+Use `file-structure` when placing or moving components, extracting component utilities, or separating server-only modules in React, Next.js, and other JS/TS projects.
+
+```text
+Use $file-structure when adding the order summary component and its utilities.
+```
+
+For the Claude Code plugin, use `/cw-skills:file-structure`.

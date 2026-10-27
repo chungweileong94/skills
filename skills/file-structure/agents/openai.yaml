@@ -1,0 +1,3 @@
+interface:
+  display_name: "File structure"
+  short_description: "Place components, helpers, and server-only code"
